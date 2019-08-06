@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>列表</title>
+</head>
+
+<body>
+    <h3>列表</h3>
+    <table class="user_list">
+        <tr>
+            <th>id</th>
+            <th>昵称</th>
+            <th>密码</th>
+            <th>操作</th>
+        </tr>
+
+
+    </table>
+
+
+    <script>
+        // 1. 创建ajax引擎对象
+        var ajax = new XMLHttpRequest();
+
+        // 2. 配置请求方式和请求地址
+        ajax.open('get', '/ajax/do_list.php', 'ture');
+        /*
+            参数一、请求的方式get、post
+            参数二、请求服务器的地址
+            参数三、true/false  true:是异步(第三个参数不写，默认ajax是异步，一般开发中不写这个参数)
+                    false：同步( 很少用 )
+        */
+
+        // 3. 监听ajax引擎对象的状态，在合适的状态下，接收数据
+        ajax.onreadystatechange = function () {
+            // 当ajax引擎的状态为4(已经接收到服务器数据了，status是HTTP状态码，200代表成功)
+            if (ajax.readyState === 4 && ajax.status === 200) {
+                var data = ajax.response;
+
+                let str = '';
+                for (let i = 0; i < data.length; i++) {
+                    str += "<tr>";
+                    str += "<td>" + data[i].id + "</td>";
+                    str += "<td onclick='edit(this," + data[i].id + ")'>" + data[i].username + "</td>";
+                    str += "<td>" + data[i].pwd + "</td>";
+                    str += '<td onclick="user_delete(' + data[i].id + ')">删除</td>';
+                    str += "</tr>";
+                }
+
+            }
+        }
+
+
+
+        function user_delete(id) {
+            let url = "/ajax/do_delete?id=" + id;
+            ajax.open('post', url, 'ture');
+
+        }
+
+
+        function edit(element, id) {
+            var oldhtml = element.innerHTML;
+            if (oldhtml.indexOf('type="text"') > 0) {
+                return;
+            }
+            var newobj = document.createElement('input');
+            newobj.type = 'text';
+            newobj.value = oldhtml;
+            newobj.onblur = function () {
+                if (this.value && this.value.trim() !== "") {
+                    let url = "/ajax/do_update?id=" + id + "&user_name=" + this.value;
+                    // TODO: 更新操作
+                    ajax.open('post', url, 'ture');
+
+                    // $.get(url,function(e){
+                    //     if(e.code == 200){
+                    //         alert("更新成功");
+                    //         element.innerHTML = this.value == oldhtml ? oldhtml : this.value;
+                    //     }else{
+                    //         alert("更新失败")
+                    //     }
+                    // })
+
+                } else {
+                    element.innerHTML = oldhtml;
+                }
+            }
+            element.innerHTML = '';
+            element.appendChild(newobj);
+            newobj.setSelectionRange(0, oldhtml.length);
+            newobj.focus();
+        }
+        // 4.发送ajax请求
+        ajax.send();
+
+    </script>
+</body>
+
+</html>
